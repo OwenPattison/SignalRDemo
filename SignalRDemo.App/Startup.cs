@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SignalRDemo.App
 {
+    using Hubs;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -20,6 +22,8 @@ namespace SignalRDemo.App
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // In production, the React files will be served from this directory
@@ -51,6 +55,11 @@ namespace SignalRDemo.App
                 routes.MapRoute(
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
+            });
+
+            app.UseSignalR(options =>
+            {
+                options.MapHub<ChatHub>("/chat");
             });
 
             app.UseSpa(spa =>

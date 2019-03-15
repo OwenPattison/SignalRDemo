@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { NewMessageForm } from "./NewMessageForm";
+import { HubConnectionBuilder } from "@aspnet/signalr";
 
 interface LiveChatState {
     messages: string[];
@@ -8,6 +9,21 @@ interface LiveChatState {
 export class LiveChat extends Component<{}, LiveChatState> {
     public state: LiveChatState = {
         messages: []
+    }
+
+    private connection = new HubConnectionBuilder().withUrl("/chat").build();
+
+    public async componentDidMount() {
+        try {
+            await this.connection.start();
+            this.connection.on("messageReceived", this.addMessage)
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    public componentWillUnmount() {
+        this.connection.stop();
     }
 
     public render() {
@@ -28,7 +44,7 @@ export class LiveChat extends Component<{}, LiveChatState> {
     }));
 
     private sendMessage = async (message: string) => {
-        // TODO: send to hub!
+        await this.connection.send("sendMessage", message);
         this.addMessage(message);
     }
 }
